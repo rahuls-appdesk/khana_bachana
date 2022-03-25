@@ -1,4 +1,4 @@
-package hackathon.khana_bachana;
+package hackathon.khana_bachana.common;
 
 public enum UserType {
   INDIVIDUAL,
