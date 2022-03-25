@@ -5,6 +5,9 @@ import hackathon.khana_bachana.data.UserEntity;
 import hackathon.khana_bachana.dtos.ListingDto;
 import hackathon.khana_bachana.dtos.ListingResponseDto;
 import hackathon.khana_bachana.dtos.OrderDto;
+import hackathon.khana_bachana.dtos.OrderResponseDto;
+import hackathon.khana_bachana.dtos.UserDto;
+import hackathon.khana_bachana.dtos.UserResponseDto;
 import java.util.UUID;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -23,12 +26,12 @@ public class Controller {
   }
 
   @PostMapping("/user/add")
-  public UserEntity addUser(@RequestBody UserEntity userEntity) {
-    return service.addUser(userEntity);
+  public UserResponseDto addUser(@RequestBody UserDto userDto) {
+    return service.addUser(userDto);
   }
 
   @GetMapping("/user/get/{id}")
-  public UserEntity getUser(@PathVariable("id") UUID userId) {
+  public UserResponseDto getUser(@PathVariable("id") UUID userId) {
     return service.getUser(userId);
   }
 
@@ -43,12 +46,12 @@ public class Controller {
   }
 
   @PostMapping("/order/add")
-  public OrderEntity addOrder(@RequestBody OrderDto orderDto) {
+  public OrderResponseDto addOrder(@RequestBody OrderDto orderDto) {
     return service.addOrder(orderDto);
   }
 
   @GetMapping("/order/get/{id}")
-  public OrderEntity getOrder(@PathVariable("id") UUID orderId) {
+  public OrderResponseDto getOrder(@PathVariable("id") UUID orderId) {
     return service.getOrder(orderId);
   }
 

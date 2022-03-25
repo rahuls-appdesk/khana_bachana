@@ -10,9 +10,13 @@ import hackathon.khana_bachana.data.UserRepository;
 import hackathon.khana_bachana.dtos.ListingDto;
 import hackathon.khana_bachana.dtos.ListingResponseDto;
 import hackathon.khana_bachana.dtos.OrderDto;
+import hackathon.khana_bachana.dtos.OrderResponseDto;
+import hackathon.khana_bachana.dtos.UserDto;
+import hackathon.khana_bachana.dtos.UserResponseDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.transaction.Transactional;
+import org.apache.catalina.User;
 
 @org.springframework.stereotype.Service
 public class Service {
@@ -29,8 +33,15 @@ public class Service {
     this.orderRepository = orderRepository;
   }
 
-  public UserEntity addUser(UserEntity userEntity) {
-    return userRepository.save(userEntity);
+  public UserResponseDto addUser(UserDto userDto) {
+    UserEntity userEntity = new UserEntity();
+    userEntity.setName(userDto.getName());
+    userEntity.setEmail(userDto.getEmail());
+    userEntity.setPhone(userDto.getPhone());
+    userEntity.setPassword(userDto.getPassword());
+    userEntity.setUserType(userDto.getUserType());
+    userRepository.save(userEntity);
+    return buildUserResponse(userEntity);
   }
 
   public ListingResponseDto addListing(ListingDto listingDto) {
@@ -47,15 +58,21 @@ public class Service {
     return buildListingResponse(listingEntity);
   }
 
-  public OrderEntity addOrder(OrderDto orderDto) {
+  public OrderResponseDto addOrder(OrderDto orderDto) {
     OrderEntity orderEntity = new OrderEntity();
-    orderEntity.setProducer(userRepository.findById(orderDto.getProducer()).get());
-    orderEntity.setConsumer(userRepository.findById(orderDto.getConsumer()).get());
+    UserEntity producer = userRepository.getById(orderDto.getProducer());
+    UserEntity consumer = userRepository.getById(orderDto.getConsumer());
+    orderEntity.setProducer(producer);
+    producer.getProducerOrderEntityList().add(orderEntity);
+    orderEntity.setConsumer(consumer);
+    consumer.getConsumerOrderEntityList().add(orderEntity);
     ListingEntity listingEntity = listingRepository.findById(orderDto.getListing()).get();
     orderEntity.setListing(listingEntity);
     listingEntity.setListingStatus(ListingStatus.RESERVED);
     orderEntity.setCreatedAt(LocalDateTime.now());
-    return orderRepository.save(orderEntity);
+    orderEntity.setReservedAt(orderDto.getReservedAt());
+    orderRepository.save(orderEntity);
+    return buildOrderResponse(orderEntity);
   }
 
   @Transactional
@@ -75,16 +92,16 @@ public class Service {
     return "Order cancelled";
   }
 
-  public UserEntity getUser(UUID userId) {
-    return userRepository.findById(userId).get();
+  public UserResponseDto getUser(UUID userId) {
+    return buildUserResponse(userRepository.getById(userId));
   }
 
   public ListingResponseDto getListing(UUID listingId) {
     return buildListingResponse(listingRepository.findById(listingId).get());
   }
 
-  public OrderEntity getOrder(UUID orderId) {
-    return orderRepository.findById(orderId).get();
+  public OrderResponseDto getOrder(UUID orderId) {
+    return buildOrderResponse(orderRepository.getById(orderId));
   }
 
   private ListingResponseDto buildListingResponse(ListingEntity listingEntity) {
@@ -99,5 +116,25 @@ public class Service {
         .build();
   }
 
+  private OrderResponseDto buildOrderResponse(OrderEntity orderEntity) {
+    return OrderResponseDto.builder()
+        .id(orderEntity.getId())
+        .producer(orderEntity.getProducer().getId())
+        .consumer(orderEntity.getConsumer().getId())
+        .listing(orderEntity.getListing().getId())
+        .createdAt(orderEntity.getCreatedAt())
+        .reservedAt(orderEntity.getReservedAt())
+        .build();
+  }
+
+  private UserResponseDto buildUserResponse(UserEntity userEntity) {
+    return UserResponseDto.builder()
+        .id(userEntity.getId())
+        .name(userEntity.getName())
+        .phone(userEntity.getPhone())
+        .email(userEntity.getEmail())
+        .userType(userEntity.getUserType())
+        .build();
+  }
 
 }

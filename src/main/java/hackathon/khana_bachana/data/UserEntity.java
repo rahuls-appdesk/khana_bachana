@@ -35,4 +35,11 @@ public class UserEntity {
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "producer")
   List<ListingEntity> listingEntityList = new ArrayList<>();
+
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "producer")
+  List<OrderEntity> producerOrderEntityList = new ArrayList<>();
+
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "consumer")
+  List<OrderEntity> consumerOrderEntityList = new ArrayList<>();
+
 }
