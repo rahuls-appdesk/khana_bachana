@@ -16,7 +16,6 @@ import hackathon.khana_bachana.dtos.UserResponseDto;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import javax.transaction.Transactional;
-import org.apache.catalina.User;
 
 @org.springframework.stereotype.Service
 public class Service {
@@ -47,9 +46,9 @@ public class Service {
   public ListingResponseDto addListing(ListingDto listingDto) {
     ListingEntity listingEntity = new ListingEntity();
     listingEntity.setName(listingDto.getName());
-    UserEntity userEntity = userRepository.getById(listingDto.getProducerId());
-    listingEntity.setProducer(userEntity);
-    userEntity.getListingEntityList().add(listingEntity);
+    UserEntity producer = getUserEntity(listingDto.getProducerId());
+    listingEntity.setProducer(producer);
+    producer.getListingEntityList().add(listingEntity);
     listingEntity.setDescription(listingDto.getDescription());
     listingEntity.setPrice(listingDto.getPrice());
     listingEntity.setCreatedAt(LocalDateTime.now());
@@ -60,13 +59,13 @@ public class Service {
 
   public OrderResponseDto addOrder(OrderDto orderDto) {
     OrderEntity orderEntity = new OrderEntity();
-    UserEntity producer = userRepository.getById(orderDto.getProducer());
-    UserEntity consumer = userRepository.getById(orderDto.getConsumer());
+    UserEntity producer = getUserEntity(orderDto.getProducer());
+    UserEntity consumer = getUserEntity(orderDto.getConsumer());
     orderEntity.setProducer(producer);
     producer.getProducerOrderEntityList().add(orderEntity);
     orderEntity.setConsumer(consumer);
     consumer.getConsumerOrderEntityList().add(orderEntity);
-    ListingEntity listingEntity = listingRepository.findById(orderDto.getListing()).get();
+    ListingEntity listingEntity = getListingEntity(orderDto.getListing());
     orderEntity.setListing(listingEntity);
     listingEntity.setListingStatus(ListingStatus.RESERVED);
     orderEntity.setCreatedAt(LocalDateTime.now());
@@ -77,14 +76,14 @@ public class Service {
 
   @Transactional
   public String closeOrderListing(UUID orderId) {
-    OrderEntity orderEntity = orderRepository.getById(orderId);
+    OrderEntity orderEntity = getOrderEntity(orderId);
     orderEntity.getListing().setListingStatus(ListingStatus.CLOSED);
     orderRepository.delete(orderEntity);
     return "Order closed";
   }
 
   public String cancelReservation(UUID orderId) {
-    OrderEntity orderEntity = orderRepository.getById(orderId);
+    OrderEntity orderEntity = getOrderEntity(orderId);
     orderEntity.getListing().setListingStatus(ListingStatus.LISTED);
     if (LocalDateTime.now().isAfter(orderEntity.getReservedAt().plusMinutes(10))) {
       orderRepository.delete(orderEntity);
@@ -93,15 +92,15 @@ public class Service {
   }
 
   public UserResponseDto getUser(UUID userId) {
-    return buildUserResponse(userRepository.getById(userId));
+    return buildUserResponse(getUserEntity(userId));
   }
 
   public ListingResponseDto getListing(UUID listingId) {
-    return buildListingResponse(listingRepository.findById(listingId).get());
+    return buildListingResponse(getListingEntity(listingId));
   }
 
   public OrderResponseDto getOrder(UUID orderId) {
-    return buildOrderResponse(orderRepository.getById(orderId));
+    return buildOrderResponse(getOrderEntity(orderId));
   }
 
   private ListingResponseDto buildListingResponse(ListingEntity listingEntity) {
@@ -113,6 +112,7 @@ public class Service {
         .expiry(listingEntity.getExpiry())
         .price(listingEntity.getPrice())
         .producerId(listingEntity.getProducer().getId())
+        .listingStatus(listingEntity.getListingStatus())
         .build();
   }
 
@@ -135,6 +135,21 @@ public class Service {
         .email(userEntity.getEmail())
         .userType(userEntity.getUserType())
         .build();
+  }
+
+  private ListingEntity getListingEntity(UUID listingId) {
+    return listingRepository.findById(listingId)
+        .orElseThrow(() -> new RuntimeException("No listing entity"));
+  }
+
+  private OrderEntity getOrderEntity(UUID orderId) {
+    return orderRepository.findById(orderId)
+        .orElseThrow(() -> new RuntimeException("No order entity"));
+  }
+
+  private UserEntity getUserEntity(UUID userId) {
+    return userRepository.findById(userId)
+        .orElseThrow(() -> new RuntimeException("No user entity"));
   }
 
 }

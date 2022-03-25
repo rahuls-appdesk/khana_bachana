@@ -62,6 +62,6 @@ public class Controller {
 
   @PutMapping("order/cancel/{id}")
   public String cancelOrderListing(@PathVariable("id") UUID orderId) {
-    return service.closeOrderListing(orderId);
+    return service.cancelReservation(orderId);
   }
 }

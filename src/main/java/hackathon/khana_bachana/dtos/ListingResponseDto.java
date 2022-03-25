@@ -1,5 +1,6 @@
 package hackathon.khana_bachana.dtos;
 
+import hackathon.khana_bachana.common.ListingStatus;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
@@ -16,4 +17,5 @@ public class ListingResponseDto {
   private LocalDateTime expiry;
   private LocalDateTime createdAt;
   private UUID producerId;
+  private ListingStatus listingStatus;
 }
