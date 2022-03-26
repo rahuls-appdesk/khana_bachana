@@ -14,8 +14,8 @@ public class ListingResponseDto {
   private String name;
   private String description;
   private String price;
-  private LocalDateTime expiry;
-  private LocalDateTime createdAt;
+  private String expiry;
+  private String createdAt;
   private UUID producerId;
   private ListingStatus listingStatus;
 }

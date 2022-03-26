@@ -1,14 +1,15 @@
 package hackathon.khana_bachana;
 
-import hackathon.khana_bachana.data.OrderEntity;
-import hackathon.khana_bachana.data.UserEntity;
 import hackathon.khana_bachana.dtos.ListingDto;
 import hackathon.khana_bachana.dtos.ListingResponseDto;
 import hackathon.khana_bachana.dtos.OrderDto;
 import hackathon.khana_bachana.dtos.OrderResponseDto;
+import hackathon.khana_bachana.dtos.SignInDto;
 import hackathon.khana_bachana.dtos.UserDto;
 import hackathon.khana_bachana.dtos.UserResponseDto;
+import java.util.List;
 import java.util.UUID;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -64,4 +65,30 @@ public class Controller {
   public String cancelOrderListing(@PathVariable("id") UUID orderId) {
     return service.cancelReservation(orderId);
   }
+
+  @GetMapping("/listing/get/all")
+  public List<ListingResponseDto> getAllListings() {
+    return service.getAllListings();
+  }
+
+  @GetMapping("/listing/get/active")
+  public List<ListingResponseDto> getActiveListings() {
+    return service.getActiveListings();
+  }
+
+  @GetMapping("/listing/getByProducer/{id}")
+  public List<ListingResponseDto> getListingsByProducer(@PathVariable("id") UUID producerId) {
+    return service.getListingsByProducer(producerId);
+  }
+
+  @PostMapping("/user/signin")
+  public UserResponseDto signIn(@RequestBody SignInDto signInDto) {
+    return service.signIn(signInDto);
+  }
+
+  @DeleteMapping("user/delete/{id}")
+  public String deleteUser(@PathVariable("id") UUID userId) {
+    return service.deleteUser(userId);
+  }
+
 }

@@ -4,9 +4,11 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
-@Builder
+//@Builder
+@NoArgsConstructor
 public class UserDto {
   private String name;
   private String phone;

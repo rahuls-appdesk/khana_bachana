@@ -11,10 +11,13 @@ import hackathon.khana_bachana.dtos.ListingDto;
 import hackathon.khana_bachana.dtos.ListingResponseDto;
 import hackathon.khana_bachana.dtos.OrderDto;
 import hackathon.khana_bachana.dtos.OrderResponseDto;
+import hackathon.khana_bachana.dtos.SignInDto;
 import hackathon.khana_bachana.dtos.UserDto;
 import hackathon.khana_bachana.dtos.UserResponseDto;
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.transaction.Transactional;
 
 @org.springframework.stereotype.Service
@@ -108,8 +111,8 @@ public class Service {
         .id(listingEntity.getId())
         .name(listingEntity.getName())
         .description(listingEntity.getDescription())
-        .createdAt(listingEntity.getCreatedAt())
-        .expiry(listingEntity.getExpiry())
+        .createdAt(listingEntity.getCreatedAt().toString())
+        .expiry(listingEntity.getExpiry().toString())
         .price(listingEntity.getPrice())
         .producerId(listingEntity.getProducer().getId())
         .listingStatus(listingEntity.getListingStatus())
@@ -152,4 +155,35 @@ public class Service {
         .orElseThrow(() -> new RuntimeException("No user entity"));
   }
 
+  public List<ListingResponseDto> getAllListings() {
+    return listingRepository.findAll().stream()
+        .map(this::buildListingResponse).collect(Collectors.toList());
+  }
+
+  public List<ListingResponseDto> getActiveListings() {
+    return listingRepository.findAll().stream()
+        .filter(listingEntity -> listingEntity.getListingStatus() == ListingStatus.LISTED)
+        .map(this::buildListingResponse).collect(Collectors.toList());
+  }
+
+  public List<ListingResponseDto> getListingsByProducer(UUID producerId) {
+    return listingRepository.findAll().stream()
+        .filter(listingEntity -> listingEntity.getProducer().getId().equals(producerId))
+        .map(this::buildListingResponse).collect(
+            Collectors.toList());
+  }
+
+  public UserResponseDto signIn(SignInDto signInDto) {
+    UserEntity userEntity = userRepository.findByName(signInDto.getUsername())
+        .orElseThrow(() -> new RuntimeException("Username not found"));
+    if (!userEntity.getPassword().equals(signInDto.getPassword())) {
+      throw new RuntimeException("Wrong password");
+    }
+    return buildUserResponse(userEntity);
+  }
+
+  public String deleteUser(UUID userId) {
+    userRepository.deleteById(userId);
+    return "User deleted";
+  }
 }
